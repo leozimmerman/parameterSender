@@ -17,33 +17,6 @@
   ==============================================================================
 */
 
-/*******************************************************************************
- The block below describes the properties of this PIP. A PIP is a short snippet
- of code that can be read by the Projucer and used to generate a JUCE project.
-
- BEGIN_JUCE_PIP_METADATA
-
- name:             ParameterSender
- version:          1.0.0
- vendor:           Oleo Lab
- website:          http://juce.com
- description:      Explores the audio processor value tree state.
-
- dependencies:     juce_audio_basics, juce_audio_devices, juce_audio_formats,
-                   juce_audio_plugin_client, juce_audio_processors,
-                   juce_audio_utils, juce_core, juce_data_structures,
-                   juce_events, juce_graphics, juce_gui_basics, juce_gui_extra, juce_osc
- exporters:        xcode_mac, vs2019, linux_make
-
- type:             AudioProcessor
- mainClass:        ParameterSenderProcessor
-
- useLocalCopy:     1
-
- END_JUCE_PIP_METADATA
-
-*******************************************************************************/
-
 #pragma once
 
 #include "GenericEditor.h"
@@ -55,25 +28,25 @@ public:
     ParameterSenderProcessor()
         : parameters (*this, nullptr, juce::Identifier ("ParameterSender"),
                       {
-                          std::make_unique<juce::AudioParameterFloat> ("gain",            // parameterID
-                                                                       "Gain",            // parameter name
+                          std::make_unique<juce::AudioParameterFloat> ("value",            // parameterID
+                                                                       "Value",            // parameter name
                                                                        0.0f,              // minimum value
                                                                        1.0f,              // maximum value
                                                                        0.5f),             // default value
-                          std::make_unique<juce::AudioParameterBool> ("invertPhase",      // parameterID
-                                                                      "Invert Phase",     // parameter name
+                          std::make_unique<juce::AudioParameterBool> ("active",      // parameterID
+                                                                      "Active",     // parameter name
                                                                       false)              // default value
                       })
     {
-        phaseParameter = parameters.getRawParameterValue ("invertPhase");
-        gainParameter  = parameters.getRawParameterValue ("gain");
+        phaseParameter = parameters.getRawParameterValue ("active");
+        gainParameter  = parameters.getRawParameterValue ("value");
     }
 
     //==============================================================================
     void prepareToPlay (double, int) override
     {
         auto phase = *phaseParameter < 0.5f ? 1.0f : -1.0f;
-        previousGain = *gainParameter * phase;
+
     }
 
     void releaseResources() override {}
@@ -82,16 +55,7 @@ public:
     {
         auto phase = *phaseParameter < 0.5f ? 1.0f : -1.0f;
         auto currentGain = *gainParameter * phase;
-
-        if (currentGain == previousGain)
-        {
-            buffer.applyGain (currentGain);
-        }
-        else
-        {
-            buffer.applyGainRamp (0, buffer.getNumSamples(), previousGain, currentGain);
-            previousGain = currentGain;
-        }
+        buffer.applyGain (currentGain);
     }
 
     //==============================================================================
@@ -131,7 +95,6 @@ public:
 private:
     //==============================================================================
     juce::AudioProcessorValueTreeState parameters;
-    float previousGain; // [1]
 
     std::atomic<float>* phaseParameter = nullptr;
     std::atomic<float>* gainParameter  = nullptr;

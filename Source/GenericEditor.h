@@ -9,7 +9,8 @@ public:
     {
         paramControlHeight = 40,
         paramLabelWidth    = 80,
-        paramSliderWidth   = 300
+        paramSliderWidth   = 300,
+        paramToggleWidth = 75
     };
 
     typedef juce::AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
@@ -19,17 +20,18 @@ public:
         : AudioProcessorEditor (parent),
           valueTreeState (vts)
     {
-        gainLabel.setText ("Gain", juce::dontSendNotification);
-        addAndMakeVisible (gainLabel);
+        valueLabel.setText ("Value", juce::dontSendNotification);
+        addAndMakeVisible (valueLabel);
 
-        addAndMakeVisible (gainSlider);
-        gainAttachment.reset (new SliderAttachment (valueTreeState, "gain", gainSlider));
+        addAndMakeVisible (valueSlider);
+        gainAttachment.reset (new SliderAttachment (valueTreeState, "value", valueSlider));
 
-        invertButton.setButtonText ("Invert Phase");
-        addAndMakeVisible (invertButton);
-        invertAttachment.reset (new ButtonAttachment (valueTreeState, "invertPhase", invertButton));
-
-        setSize (paramSliderWidth + paramLabelWidth, juce::jmax (100, paramControlHeight * 2));
+        activeButton.setButtonText ("Active");
+        addAndMakeVisible (activeButton);
+        invertAttachment.reset (new ButtonAttachment (valueTreeState, "active", activeButton));
+        
+        int parametersCount = 1;
+        setSize (paramSliderWidth + paramLabelWidth + paramToggleWidth, juce::jmax (100, paramControlHeight * parametersCount));
     }
 
     void resized() override
@@ -37,10 +39,9 @@ public:
         auto r = getLocalBounds();
 
         auto gainRect = r.removeFromTop (paramControlHeight);
-        gainLabel .setBounds (gainRect.removeFromLeft (paramLabelWidth));
-        gainSlider.setBounds (gainRect);
-
-        invertButton.setBounds (r.removeFromTop (paramControlHeight));
+        valueLabel .setBounds (gainRect.removeFromLeft (paramLabelWidth));
+        activeButton.setBounds (gainRect.removeFromRight(paramToggleWidth));
+        valueSlider.setBounds (gainRect);
     }
 
     void paint (juce::Graphics& g) override
@@ -51,10 +52,10 @@ public:
 private:
     juce::AudioProcessorValueTreeState& valueTreeState;
 
-    juce::Label gainLabel;
-    juce::Slider gainSlider;
+    juce::Label valueLabel;
+    juce::Slider valueSlider;
     std::unique_ptr<SliderAttachment> gainAttachment;
 
-    juce::ToggleButton invertButton;
+    juce::ToggleButton activeButton;
     std::unique_ptr<ButtonAttachment> invertAttachment;
 };
