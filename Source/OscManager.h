@@ -3,6 +3,9 @@
 
 #define DEFAULT_OSC_HOST "127.0.0.1"
 #define DEFAULT_OSC_PORT 9001
+#define DEFAULT_OSC_MAIN_ID "trackId"
+#define MIN_OSC_PORT 1
+#define MAX_OSC_PORT 65535
 
 class OscManager {
 public:
@@ -10,7 +13,7 @@ public:
     OscManager() {
         _oscHost = DEFAULT_OSC_HOST;
         _oscPort = DEFAULT_OSC_PORT;
-        _mainID = "parameterSender";
+        _mainID = DEFAULT_OSC_MAIN_ID;
     }
     
     void setMaindId(juce::String mainId) {

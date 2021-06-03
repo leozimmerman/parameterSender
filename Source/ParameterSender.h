@@ -63,6 +63,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(int va
                                                                IDs::StringWithIdx(IDs::sendName, i),     // parameter name
                                                                false));
     }
+    layout.add(std::make_unique<juce::AudioParameterInt> (IDs::oscPort,            // parameterID
+                                                          IDs::oscPortName,            // parameter name
+                                                          MIN_OSC_PORT,              // minimum value
+                                                          MAX_OSC_PORT,              // maximum value
+                                                          DEFAULT_OSC_PORT));
+    
    
     return layout;
 }
