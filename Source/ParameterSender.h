@@ -21,31 +21,56 @@
 
 #include "GenericEditor.h"
 
+class ValueProcessorComponent {
+public:
+    
+    ValueProcessorComponent(int identifier, AudioProcessorValueTreeState* valueTreeState) {
+        idx = identifier;
+        sendParameter = valueTreeState->getRawParameterValue (IDs::StringWithIdx(IDs::send, idx));
+        valueParameter  = valueTreeState->getRawParameterValue (IDs::StringWithIdx(IDs::value, idx));
+    }
+    
+    int idx;
+    
+    std::atomic<float>* sendParameter = nullptr;
+    std::atomic<float>* valueParameter  = nullptr;
+};
+
+juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(int valuesCount)
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    for (int i=0; i<valuesCount; ++i) {
+        layout.add(std::make_unique<juce::AudioParameterFloat> (IDs::StringWithIdx(IDs::value, i),            // parameterID
+                                                                IDs::StringWithIdx(IDs::valueName, i),            // parameter name
+                                                                0.0f,              // minimum value
+                                                                1.0f,              // maximum value
+                                                                0.5f));
+        layout.add(std::make_unique<juce::AudioParameterBool> (IDs::StringWithIdx(IDs::send, i),      // parameterID
+                                                               IDs::StringWithIdx(IDs::sendName, i),     // parameter name
+                                                               false));
+    }
+   
+    return layout;
+}
+
+
 class ParameterSenderProcessor  : public juce::AudioProcessor
 {
 public:
     //==============================================================================
     ParameterSenderProcessor()
-        : parameters (*this, nullptr, juce::Identifier ("ParameterSender"),
-                      {
-                          std::make_unique<juce::AudioParameterFloat> ("value",            // parameterID
-                                                                       "Value",            // parameter name
-                                                                       0.0f,              // minimum value
-                                                                       1.0f,              // maximum value
-                                                                       0.5f),             // default value
-                          std::make_unique<juce::AudioParameterBool> ("active",      // parameterID
-                                                                      "Active",     // parameter name
-                                                                      false)              // default value
-                      })
+        : parameters (*this, nullptr, juce::Identifier ("ParameterSender"), createParameterLayout(VALUES_NUMBER))
     {
-        phaseParameter = parameters.getRawParameterValue ("active");
-        gainParameter  = parameters.getRawParameterValue ("value");
+        for (int i=0; i<VALUES_NUMBER; ++i) {
+            auto comp = ValueProcessorComponent(i, &parameters);
+            components.push_back(comp);
+        }
     }
 
     //==============================================================================
     void prepareToPlay (double, int) override
     {
-        auto phase = *phaseParameter < 0.5f ? 1.0f : -1.0f;
+
 
     }
 
@@ -53,9 +78,9 @@ public:
 
     void processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer&) override
     {
-        auto phase = *phaseParameter < 0.5f ? 1.0f : -1.0f;
-        auto currentGain = *gainParameter * phase;
-        buffer.applyGain (currentGain);
+        for (auto comp: components) {
+            ///send osc
+        }
     }
 
     //==============================================================================
@@ -95,9 +120,7 @@ public:
 private:
     //==============================================================================
     juce::AudioProcessorValueTreeState parameters;
-
-    std::atomic<float>* phaseParameter = nullptr;
-    std::atomic<float>* gainParameter  = nullptr;
+    std::vector<ValueProcessorComponent> components;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterSenderProcessor)
