@@ -74,7 +74,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(int va
 }
 
 
-class ParameterSenderProcessor  : public juce::AudioProcessor
+class ParameterSenderProcessor  : public juce::AudioProcessor, public OscHostListener, private juce::AudioProcessorValueTreeState::Listener
 {
 public:
     //==============================================================================
@@ -85,17 +85,25 @@ public:
             auto comp = ValueProcessorComponent(i, &parameters);
             components.push_back(comp);
         }
+        parameters.addParameterListener(IDs::oscPort, this);
+        parameters.addParameterListener(IDs::mainId, this);
     }
 
     //==============================================================================
     void prepareToPlay (double, int) override {}
     void releaseResources() override {}
     
-    void oscMainIDHasChanged (juce::String newOscMainID) {
+    void parameterChanged (const juce::String& param, float value) override {
+        if (param == IDs::oscPort) {
+            oscPortHasChanged(value);
+        }
+    }
+    
+    void oscMainIDHasChanged (juce::String newOscMainID) override {
         oscManager.setMaindId(newOscMainID);
     }
 
-    void oscHostHasChanged (juce::String newOscHostAdress) {
+    void oscHostHasChanged (juce::String newOscHostAdress) override {
         oscManager.setOscHost(newOscHostAdress);
     }
 
@@ -112,7 +120,11 @@ public:
     }
 
     //==============================================================================
-    juce::AudioProcessorEditor* createEditor() override          { return new GenericEditor (*this, parameters); }
+    juce::AudioProcessorEditor* createEditor() override          {
+        editor = new GenericEditor (*this, parameters);
+        editor->addOscListener(this);
+        return editor;
+    }
     bool hasEditor() const override                              { return true; }
 
     //==============================================================================
@@ -140,9 +152,15 @@ public:
     {
         std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
 
-        if (xmlState.get() != nullptr)
-            if (xmlState->hasTagName (parameters.state.getType()))
-                parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
+        if (xmlState.get() != nullptr) {
+            auto type = parameters.state.getType();
+            if (xmlState->hasTagName (type)) {
+                auto newValueTree = juce::ValueTree::fromXml (*xmlState);
+                parameters.replaceState (newValueTree);
+                editor->updateOscLabelsTexts(true);
+            }
+        }
+            
     }
 
 private:
@@ -151,6 +169,7 @@ private:
     std::vector<ValueProcessorComponent> components;
     
     OscManager oscManager;
+    GenericEditor* editor;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterSenderProcessor)

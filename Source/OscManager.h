@@ -14,6 +14,8 @@ public:
         _oscHost = DEFAULT_OSC_HOST;
         _oscPort = DEFAULT_OSC_PORT;
         _mainID = DEFAULT_OSC_MAIN_ID;
+        _isConnected = false;
+        connect();
     }
     
     void setMaindId(juce::String mainId) {
@@ -35,13 +37,17 @@ public:
     }
     
     void connect(const juce::String& targetHostName, int targetPortNumber) {
+        _isConnected = false;
         oscSender.disconnect();
-        if (! oscSender.connect (targetHostName, targetPortNumber)) {
+        
+        _isConnected = oscSender.connect (targetHostName, targetPortNumber);
+        if (! _isConnected) {
             juce::Logger::outputDebugString(&"Error: could not connect to UDP port:" [ targetPortNumber]);
         }
     }
     
     void sendValue(float value, juce::String name) {
+        if (!_isConnected) return;
         juce::String root = "/" + _mainID;
         juce::String address = root + "/" + name;
         juce::OSCAddressPattern addressPattern = juce::OSCAddressPattern(address);
@@ -53,4 +59,13 @@ private:
     juce::String _oscHost;
     juce::String _mainID;
     int _oscPort;
+    bool _isConnected;
+};
+
+class OscHostListener
+{
+public:
+    virtual ~OscHostListener() = default;
+    virtual void oscHostHasChanged (juce::String newOscHostAdress) = 0;
+    virtual void oscMainIDHasChanged (juce::String newOscMainID) = 0;
 };

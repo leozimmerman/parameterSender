@@ -34,6 +34,10 @@ namespace IDs
     static juce::String StringWithIdx(juce::String ID, int idx) {
         return ID +":" + juce::String(idx);
     }
+
+    static juce::Identifier oscData     { "OSC" };
+    static juce::Identifier hostAddress { "host" };
+    static juce::String mainId      { "main" };
 }
 
 //==============================================================================
@@ -91,7 +95,6 @@ public:
             components.push_back(comp);
         }
         
-        
         addAndMakeVisible (hostLabel);
         hostLabel.setFont (juce::Font (20.0, juce::Font::bold));
         hostLabel.setComponentID("hostLabel");
@@ -114,15 +117,7 @@ public:
         portSlider.setSliderStyle(juce::Slider::IncDecButtons);
         portAttachment.reset (new SliderAttachment (valueTreeState, IDs::oscPort, portSlider));
         
-        juce::String hostAddress = DEFAULT_OSC_HOST;
-        ///processorState.getLastHostAddress(hostAddress);
-        
-        juce::String mainId = DEFAULT_OSC_MAIN_ID;
-        ///processorState.getLastMaindId(mainId);
-
-        mainIDLabel.setText (mainId, juce::dontSendNotification);
-        hostLabel.setText (hostAddress, juce::dontSendNotification);
-        
+        updateOscLabelsTexts(false);
         
         setSize (paramSliderWidth + paramLabelWidth + paramToggleWidth, (paramControlHeight * VALUES_NUMBER) + oscSectionHeight);
     }
@@ -133,8 +128,6 @@ public:
         for (auto comp: components) {
             comp.resized(bounds);
         }
-        
-        ///***processorState.setLastEditorSize (getWidth(), getHeight());
         
         int spacing = 10;
         int yPos = getHeight() - oscSectionHeight;
@@ -159,15 +152,74 @@ public:
     
     void labelTextChanged (juce::Label* labelThatHasChanged) override {
         if (labelThatHasChanged->getComponentID() == "hostLabel") {
-            //processorState.setOscIPAdress(labelThatHasChanged->getText());
-            std::cout << "Hola" << std::endl;
+            setOscIPAdress(labelThatHasChanged->getText());
         } else if (labelThatHasChanged->getComponentID() == "mainIDLabel") {
-            //processorState.setOscMainID(labelThatHasChanged->getText());
-            std::cout << "Chau" << std::endl;
+            setOscMainID(labelThatHasChanged->getText());
         }
+    }
+    
+    void addOscListener(OscHostListener* listener) {
+        oscListener = listener;
+    }
+    
+    void updateOscLabelsTexts(bool sendNotification) {
+        juce::String hostAddress = DEFAULT_OSC_HOST;
+        getLastHostAddress(hostAddress);
+        
+        juce::String mainId = DEFAULT_OSC_MAIN_ID;
+        getLastMainId(mainId);
+
+        auto doSend = sendNotification ? juce::sendNotification : juce::dontSendNotification;
+        mainIDLabel.setText (mainId, doSend);
+        hostLabel.setText (hostAddress, doSend);
     }
 
 private:
+    
+    bool getLastHostAddress(juce::String& address) {
+        auto oscNode = valueTreeState.state.getOrCreateChildWithName (IDs::oscData, nullptr);
+        if (oscNode.hasProperty (IDs::hostAddress) == false)
+            return false;
+
+        address  = oscNode.getProperty (IDs::hostAddress);
+        return true;
+    }
+    
+    bool getLastMainId(juce::String& identifier) {
+        auto oscNode = valueTreeState.state.getOrCreateChildWithName (IDs::oscData, nullptr);
+        if (oscNode.hasProperty (IDs::mainId) == false)
+            return false;
+
+        identifier  = oscNode.getProperty (IDs::mainId);
+        return true;
+    }
+    
+    void setLastMainId(juce::String mainId) {
+        auto oscNode = valueTreeState.state.getOrCreateChildWithName (IDs::oscData, nullptr);
+        oscNode.setProperty (IDs::mainId,  mainId,  nullptr);
+    }
+    
+    void setLastHostAddress(juce::String address) {
+        auto oscNode = valueTreeState.state.getOrCreateChildWithName (IDs::oscData, nullptr);
+        oscNode.setProperty (IDs::hostAddress,  address,  nullptr);
+    }
+    
+    void setOscIPAdress(const juce::String address) {
+        if (oscListener != nullptr) {
+            oscListener->oscHostHasChanged(address);
+            setLastHostAddress(address);
+        }
+    }
+
+    void setOscMainID(const juce::String mainID) {
+        if (oscListener != nullptr) {
+            oscListener->oscMainIDHasChanged(mainID);
+            setLastMainId(mainID);
+        }
+    }
+    
+    //---------------------------------------------------------------
+    
     juce::AudioProcessorValueTreeState& valueTreeState;
     std::vector<ValueEditorComponent> components;
     
@@ -176,4 +228,6 @@ private:
     
     juce::Slider portSlider;
     std::unique_ptr<SliderAttachment> portAttachment;
+    
+    OscHostListener* oscListener;
 };
