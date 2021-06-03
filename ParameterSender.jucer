@@ -8,6 +8,7 @@
   <MAINGROUP id="vTsfbP" name="ParameterSender">
     <GROUP id="{53F8412D-8470-3A2D-B415-0FC76FEB86EC}" name="Source">
       <FILE id="ZQAeW0" name="GenericEditor.h" compile="0" resource="0" file="Source/GenericEditor.h"/>
+      <FILE id="GtYzUt" name="OscManager.h" compile="0" resource="0" file="Source/OscManager.h"/>
       <FILE id="YDQ3Wp" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
       <FILE id="Jwmz4l" name="ParameterSender.h" compile="0" resource="0"
             file="Source/ParameterSender.h"/>

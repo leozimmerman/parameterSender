@@ -20,6 +20,7 @@
 #pragma once
 
 #include "GenericEditor.h"
+#include "OscManager.h"
 
 class ValueProcessorComponent {
 public:
@@ -30,6 +31,19 @@ public:
         valueParameter  = valueTreeState->getRawParameterValue (IDs::StringWithIdx(IDs::value, idx));
     }
     
+    juce::String getName() {
+        return IDs::StringWithIdx(IDs::value, idx);
+    }
+    
+    bool getSendActive() {
+        return *sendParameter >= 0.5;
+    }
+    
+    float getParameter() {
+        return *valueParameter;
+    }
+    
+private:
     int idx;
     
     std::atomic<float>* sendParameter = nullptr;
@@ -68,18 +82,26 @@ public:
     }
 
     //==============================================================================
-    void prepareToPlay (double, int) override
-    {
-
-
+    void prepareToPlay (double, int) override {}
+    void releaseResources() override {}
+    
+    void oscMainIDHasChanged (juce::String newOscMainID) {
+        oscManager.setMaindId(newOscMainID);
     }
 
-    void releaseResources() override {}
+    void oscHostHasChanged (juce::String newOscHostAdress) {
+        oscManager.setOscHost(newOscHostAdress);
+    }
 
-    void processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer&) override
-    {
+    void oscPortHasChanged(int newOscPort) {
+        oscManager.setOscPort(newOscPort);
+    }
+
+    void processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer&) override {
         for (auto comp: components) {
-            ///send osc
+            if (comp.getSendActive()) {
+                oscManager.sendValue(comp.getParameter(), comp.getName());
+            }
         }
     }
 
@@ -121,6 +143,8 @@ private:
     //==============================================================================
     juce::AudioProcessorValueTreeState parameters;
     std::vector<ValueProcessorComponent> components;
+    
+    OscManager oscManager;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterSenderProcessor)
