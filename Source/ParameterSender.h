@@ -68,13 +68,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout(int va
                                                           MIN_OSC_PORT,              // minimum value
                                                           MAX_OSC_PORT,              // maximum value
                                                           DEFAULT_OSC_PORT));
-    
-   
     return layout;
 }
 
 
-class ParameterSenderProcessor  : public juce::AudioProcessor, public OscHostListener, private juce::AudioProcessorValueTreeState::Listener
+class ParameterSenderProcessor  : public juce::AudioProcessor,
+                                  public OscHostListener,
+                                  private juce::AudioProcessorValueTreeState::Listener
 {
 public:
     //==============================================================================
@@ -86,7 +86,6 @@ public:
             components.push_back(comp);
         }
         parameters.addParameterListener(IDs::oscPort, this);
-        parameters.addParameterListener(IDs::mainId, this);
     }
 
     //==============================================================================
@@ -111,7 +110,7 @@ public:
         oscManager.setOscPort(newOscPort);
     }
 
-    void processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer&) override {
+    void processBlock (juce::AudioSampleBuffer& buffer, juce::MidiBuffer& midiMessages) override {
         for (auto comp: components) {
             if (comp.getSendActive()) {
                 oscManager.sendValue(comp.getParameter(), comp.getName());
@@ -120,7 +119,7 @@ public:
     }
 
     //==============================================================================
-    juce::AudioProcessorEditor* createEditor() override          {
+    juce::AudioProcessorEditor* createEditor() override {
         editor = new GenericEditor (*this, parameters);
         editor->addOscListener(this);
         return editor;
@@ -160,7 +159,6 @@ public:
                 editor->updateOscLabelsTexts(true);
             }
         }
-            
     }
 
 private:

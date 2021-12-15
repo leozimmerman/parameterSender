@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT name="ParameterSender" companyName="JUCE" version="1.0.0" userNotes="Explores the audio processor value tree state."
-              companyWebsite="http://juce.com" projectType="audioplug" pluginAUIsSandboxSafe="1"
-              pluginManufacturer="JUCE" pluginFormats="buildVST3,buildAU,buildStandalone"
-              useAppConfig="0" addUsingNamespaceToJuceHeader="1" id="Y1gYSs"
-              jucerFormatVersion="1">
+<JUCERPROJECT name="ParameterSender" companyName="Oleo Lab" version="1.0.0"
+              userNotes="Explores the audio processor value tree state." companyWebsite="http://juce.com"
+              projectType="audioplug" pluginAUIsSandboxSafe="1" pluginManufacturer="Oleo Lab"
+              pluginFormats="buildVST3,buildAU,buildStandalone" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="1" id="Y1gYSs" jucerFormatVersion="1"
+              displaySplashScreen="1" pluginName="Parameter Sender" pluginDesc="Send values over OSC">
   <MAINGROUP id="vTsfbP" name="ParameterSender">
     <GROUP id="{53F8412D-8470-3A2D-B415-0FC76FEB86EC}" name="Source">
       <FILE id="ZQAeW0" name="GenericEditor.h" compile="0" resource="0" file="Source/GenericEditor.h"/>

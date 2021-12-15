@@ -37,14 +37,15 @@ namespace IDs
 
     static juce::Identifier oscData     { "OSC" };
     static juce::Identifier hostAddress { "host" };
-    static juce::String mainId      { "main" };
+    static juce::Identifier mainId      { "main" };
 }
 
 //==============================================================================
 class ValueEditorComponent {
 public:
     
-    ValueEditorComponent(int identifier, juce::AudioProcessorEditor* editor, AudioProcessorValueTreeState* valueTreeState) {
+    ValueEditorComponent(int identifier, juce::AudioProcessorEditor* editor,
+                         AudioProcessorValueTreeState* valueTreeState) {
         idx = identifier;
         valueLabel = new juce::Label();
         valueSlider = new juce::Slider();
@@ -225,7 +226,6 @@ private:
     
     juce::Label hostLabel;
     juce::Label mainIDLabel;
-    
     juce::Slider portSlider;
     std::unique_ptr<SliderAttachment> portAttachment;
     

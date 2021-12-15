@@ -8,7 +8,7 @@
     <key>CFBundleIconFile</key>
     <string></string>
     <key>CFBundleIdentifier</key>
-    <string>com.JUCE.ParameterSender</string>
+    <string>com.OleoLab.ParameterSender</string>
     <key>CFBundleName</key>
     <string>ParameterSender</string>
     <key>CFBundleDisplayName</key>
@@ -29,9 +29,9 @@
     <array>
       <dict>
         <key>name</key>
-        <string>JUCE: ParameterSender</string>
+        <string>Oleo Lab: Parameter Sender</string>
         <key>description</key>
-        <string>ParameterSender</string>
+        <string>Send values over OSC</string>
         <key>factoryFunction</key>
         <string>ParameterSenderAUFactory</string>
         <key>manufacturer</key>

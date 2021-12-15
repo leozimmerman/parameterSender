@@ -8,7 +8,7 @@
     <key>CFBundleIconFile</key>
     <string></string>
     <key>CFBundleIdentifier</key>
-    <string>com.JUCE.ParameterSender</string>
+    <string>com.OleoLab.ParameterSender</string>
     <key>CFBundleName</key>
     <string>ParameterSender</string>
     <key>CFBundleDisplayName</key>

@@ -47,7 +47,7 @@
 namespace ProjectInfo
 {
     const char* const  projectName    = "ParameterSender";
-    const char* const  companyName    = "JUCE";
+    const char* const  companyName    = "Oleo Lab";
     const char* const  versionString  = "1.0.0";
     const int          versionNumber  = 0x10000;
 }
